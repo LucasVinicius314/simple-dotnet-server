@@ -1,5 +1,30 @@
+####################### App
+
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build-env
+WORKDIR /App
+
+# Copy everything
+COPY /App ./
+# Restore as distinct layers
+RUN dotnet restore
+# Build and publish a release
+RUN dotnet publish -c Release -o out
+
+# Build runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:6.0
+COPY --from=build-env /App/out .
+
+ENTRYPOINT ["dotnet", "DotNet.Docker.dll"]
+
+####################### End App
+####################### WebApp
+
+WORKDIR /
+
 # Install Operating system and dependencies
 FROM ubuntu:20.04
+
+ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt-get update
 RUN apt-get install -y curl git wget unzip libgconf-2-4 gdb libstdc++6 libglu1-mesa fonts-droid-fallback lib32stdc++6 python3
@@ -21,27 +46,14 @@ RUN flutter config --enable-web
 
 # Copy files to container and build
 RUN mkdir /web-app/
-COPY ../WebApp /web-app/
+COPY /WebApp /web-app/
 WORKDIR /web-app/
 RUN flutter build web
 
 WORKDIR /
-RUN mv /web-app/buid/web /App/static
 
-###############################################
+RUN mkdir /static
 
-# FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build-env
-# WORKDIR /App
+RUN mv -v /web-app/build/web/* /static
 
-# # Copy everything
-# COPY . ./
-# # Restore as distinct layers
-# RUN dotnet restore
-# # Build and publish a release
-# RUN dotnet publish -c Release -o out
-
-# # Build runtime image
-# FROM mcr.microsoft.com/dotnet/aspnet:6.0
-# WORKDIR /App
-# COPY --from=build-env /App/out .
-# ENTRYPOINT ["dotnet", "DotNet.Docker.dll"]
+####################### End WebApp

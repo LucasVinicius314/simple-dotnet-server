@@ -7,6 +7,9 @@ if (Utils.IsProductionServer())
 
 var app = builder.Build();
 
-app.MapGet("/", () => "Hello World!");
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
+app.MapGet("/a", () => "Hello World!");
 
 app.Run();
