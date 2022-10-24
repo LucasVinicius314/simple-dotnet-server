@@ -41,6 +41,8 @@ RUN mv -v /web-app/build/web/* /wwwroot
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build-env
 WORKDIR /App
 
+ENV ASPNETCORE_URLS http://+:80
+
 # Copy everything
 COPY /App ./
 # Restore as distinct layers
